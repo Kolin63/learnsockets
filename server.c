@@ -3,10 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
-#define MESSAGE                                                              \
-  "Hello there my name is Colin Melican and I am transmitting this message " \
-  "via a socket. "
+#define BUFSIZE 500
 
 int
 main() {
@@ -22,28 +21,42 @@ main() {
   struct addrinfo* ai;
 
   int err = getaddrinfo(NULL, "63036", &hints, &ai);
-
-  const char* errstr = "OK";
-  switch (err) {
-  case EAI_BADFLAGS:
-    errstr = "bad flags";
-  case EAI_FAMILY:
-    errstr = "family";
-  case EAI_NONAME:
-    errstr = "no name";
-  case EAI_SERVICE:
-    errstr = "service";
-  case EAI_SOCKTYPE:
-    errstr = "sock type";
+  if (err != 0) {
+    printf("error: %i; errno: %i\n", err, errno);
+    return err;
   }
 
-  if (err == 0) {
-    puts("OK");
-  } else {
-    printf("error: %s (%i); errno: %i\n", errstr, err, errno);
+  const struct sockaddr_in sin = {
+    .sin_family = ai->ai_family,
+    .sin_port = 63036,
+    .sin_addr = *(struct in_addr*)(ai->ai_addr),
+  };
+
+  int sock;
+  struct addrinfo* ai_ptr;
+  for (ai_ptr = ai; ai_ptr != NULL; ai_ptr = ai_ptr->ai_next) {
+    sock = socket(ai_ptr->ai_family, ai_ptr->ai_socktype, ai_ptr->ai_protocol);
+    if (sock < 0) continue;
+
+    err = connect(sock, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
+    if (err == 0) break;
   }
+
+  printf("sock: %i\n", sock);
 
   freeaddrinfo(ai);
 
+  if (ai_ptr == NULL) {
+    printf("could not bind. errno: %i\n", errno);
+    return errno;
+  }
+
+  while (true) {
+    char host[NI_MAXHOST];
+    char service[NI_MAXSERV];
+    struct sockaddr_storage peer_addr;
+  }
+
+  freeaddrinfo(ai);
   puts("Done");
 }
