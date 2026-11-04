@@ -1,0 +1,8 @@
+*
+
+!.gitignore
+!.clang-format
+!CMakeLists.txt
+
+!server.c
+!client.c

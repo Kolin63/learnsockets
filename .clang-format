@@ -1,0 +1,12 @@
+Language: C
+BasedOnStyle: Google
+DerivePointerAlignment: False
+PointerAlignment: Left
+IndentCaseLabels: False
+ColumnLimit: 0
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+SortIncludes:
+  Enabled: False
+AllowShortEnumsOnASingleLine: True
+BreakAfterReturnType: AllDefinitions
+BracedInitializerIndentWidth: 2
