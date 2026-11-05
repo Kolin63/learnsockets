@@ -63,27 +63,29 @@ main() {
 
   listen(sock, SOMAXCONN);
 
-  struct sockaddr_storage client_addr;
-  socklen_t client_addr_len;
+  for (int i = 0; i < 3; i++) {
+    struct sockaddr_storage client_addr;
+    socklen_t client_addr_len;
 
-  int client_sock = accept(sock, (struct sockaddr*)&client_addr, &client_addr_len);
+    int client_sock = accept(sock, (struct sockaddr*)&client_addr, &client_addr_len);
 
-  if (client_sock == -1) {
-    printf("could not accept client connection. errno: %i\n", errno);
-    return errno;
+    if (client_sock == -1) {
+      printf("could not accept client connection. errno: %i\n", errno);
+      return errno;
+    }
+
+    char buf[BUF_SIZE];
+    ssize_t readlen = read(client_sock, buf, BUF_SIZE);
+
+    if (readlen == -1) {
+      printf("could not read from client. errno: %i\n", errno);
+      return errno;
+    }
+
+    printf("received %zd bytes from client: '%s'\n", readlen, buf);
+
+    write(client_sock, MESSAGE, sizeof(MESSAGE));
   }
-
-  char buf[BUF_SIZE];
-  ssize_t readlen = read(client_sock, buf, BUF_SIZE);
-
-  if (readlen == -1) {
-    printf("could not read from client. errno: %i\n", errno);
-    return errno;
-  }
-
-  printf("received %zd bytes from client: '%s'\n", readlen, buf);
-
-  write(client_sock, MESSAGE, sizeof(MESSAGE));
 
   shutdown(sock, SHUT_RDWR);
   close(sock);
